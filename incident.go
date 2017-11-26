@@ -132,6 +132,14 @@ func (c *Client) ListIncidentNotes(id string) ([]IncidentNote, error) {
 	return notes, nil
 }
 
+// CreateIncident creates a new incident.
+func (c *Client) CreateIncident(id string, incident Incident) error {
+	data := make(map[string]Incident)
+	data["incident"] = incident
+	_, err := c.post("/incidents", data)
+	return err
+}
+
 // CreateIncidentNote creates a new note for the specified incident.
 func (c *Client) CreateIncidentNote(id string, note IncidentNote) error {
 	data := make(map[string]IncidentNote)
