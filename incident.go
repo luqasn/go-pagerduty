@@ -1,6 +1,8 @@
 package pagerduty
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 
 	"github.com/google/go-querystring/query"
@@ -41,6 +43,12 @@ type Incident struct {
 	Teams                []APIObject       `json:"teams,omitempty"`
 	Urgency              string            `json:"urgency,omitempty"`
 	Status               string            `json:"status,omitempty"`
+}
+
+type CreateIncidentOptions struct {
+	APIObject
+	Title   string       `json:"title,omitempty"`
+	Service APIReference `json:"service,omitempty"`
 }
 
 // ListIncidentsResponse is the response structure when calling the ListIncident API endpoint.
@@ -133,10 +141,19 @@ func (c *Client) ListIncidentNotes(id string) ([]IncidentNote, error) {
 }
 
 // CreateIncident creates a new incident.
-func (c *Client) CreateIncident(id string, incident Incident) error {
-	data := make(map[string]Incident)
+func (c *Client) CreateIncident(from string, incident CreateIncidentOptions) error {
+	data := make(map[string]CreateIncidentOptions)
 	data["incident"] = incident
-	_, err := c.post("/incidents", data)
+
+	b, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.do("POST", "/incidents", bytes.NewBuffer(b), &map[string]string{
+		"From": from,
+	})
+
 	return err
 }
 
